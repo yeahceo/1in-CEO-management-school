@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1인기업 CEO 경영게임</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449;
+    --accent:#38bdf8; --accent2:#818cf8;
+    --good:#22c55e; --bad:#ef4444;
+    --txt:#e2e8f0; --muted:#94a3b8; --line:#334155;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#1e3a5f 0%,var(--bg) 55%);
+    color:var(--txt); min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:24px 14px 60px;
+  }
+  .wrap{width:100%; max-width:680px;}
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:18px; padding:28px 24px;
+    box-shadow:0 18px 40px rgba(0,0,0,.35);
+  }
+  h1{font-size:26px; line-height:1.3; margin-bottom:6px;}
+  .sub{color:var(--muted); font-size:14px; margin-bottom:22px;}
+  .brand{color:var(--accent); font-weight:700;}
+  .badge{
+    display:inline-block; font-size:12px; color:var(--accent2);
+    background:rgba(129,140,248,.12); border:1px solid rgba(129,140,248,.4);
+    padding:4px 10px; border-radius:999px; margin-bottom:14px;
+  }
+  .defs{margin:18px 0 24px; display:grid; gap:10px;}
+  .def{
+    background:var(--card2); border-left:3px solid var(--accent);
+    border-radius:8px; padding:11px 14px; font-size:14px; line-height:1.55;
+  }
+  .def b{color:var(--accent);}
+  button{
+    font-family:inherit; cursor:pointer; border:none; outline:none;
+    transition:.15s; font-size:15px;
+  }
+  .btn-main{
+    width:100%; background:linear-gradient(120deg,var(--accent),var(--accent2));
+    color:#0b1220; font-weight:800; font-size:17px; padding:15px;
+    border-radius:12px; margin-top:6px;
+  }
+  .btn-main:hover{filter:brightness(1.08); transform:translateY(-1px);}
+  .btn-ghost{
+    width:100%; background:transparent; color:var(--txt);
+    border:1px solid var(--line); padding:13px; border-radius:12px; margin-top:10px;
+  }
+  .btn-ghost:hover{background:var(--card2);}
+
+  /* progress */
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .qcount{font-size:13px; color:var(--muted);}
+  .cat{font-size:12px; color:var(--accent2); background:rgba(129,140,248,.1);
+       border:1px solid rgba(129,140,248,.35); padding:3px 9px; border-radius:999px;}
+  .bar{height:7px; background:var(--card2); border-radius:99px; overflow:hidden; margin-bottom:22px;}
+  .fill{height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .3s;}
+
+  .qtype{font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:.5px;}
+  .qtext{font-size:19px; line-height:1.5; font-weight:700; margin-bottom:20px;}
+  .opts{display:grid; gap:11px;}
+  .opt{
+    text-align:left; background:var(--card2); color:var(--txt);
+    border:1.5px solid var(--line); border-radius:12px; padding:14px 16px;
+    display:flex; gap:12px; align-items:center; line-height:1.4;
+  }
+  .opt:hover{border-color:var(--accent); background:#2c3a52;}
+  .opt.sel{border-color:var(--accent); background:rgba(56,189,248,.14); box-shadow:0 0 0 1px var(--accent) inset;}
+  .opt .mark{
+    flex:0 0 26px; height:26px; border-radius:50%; background:var(--bg);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:var(--muted);
+  }
+  .opt.sel .mark{background:var(--accent); color:#0b1220; border-color:var(--accent);}
+  .ox{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .ox .opt{justify-content:center; font-size:30px; font-weight:800; padding:26px 0;}
+
+  .nav{margin-top:24px;}
+
+  /* result */
+  .score-big{font-size:54px; font-weight:900; text-align:center; margin:6px 0 2px;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .score-sub{text-align:center; color:var(--muted); margin-bottom:6px;}
+  .grade{text-align:center; font-size:18px; font-weight:700; margin-bottom:22px;}
+  .review h3{font-size:15px; color:var(--muted); margin:18px 0 12px; border-top:1px solid var(--line); padding-top:18px;}
+  .ritem{background:var(--card2); border-radius:12px; padding:14px 16px; margin-bottom:12px; border-left:3px solid var(--line);}
+  .ritem.ok{border-left-color:var(--good);}
+  .ritem.no{border-left-color:var(--bad);}
+  .rq{font-weight:700; font-size:15px; line-height:1.5; margin-bottom:9px;}
+  .rline{font-size:14px; line-height:1.5; margin:3px 0;}
+  .tag{font-weight:700;}
+  .tag.ok{color:var(--good);} .tag.no{color:var(--bad);}
+  .yours.no{color:var(--bad);}
+  .exp{font-size:13px; color:var(--muted); margin-top:8px; line-height:1.6;
+       background:var(--bg); border-radius:8px; padding:10px 12px;}
+  .exp b{color:var(--accent2);}
+  .foot{text-align:center; color:#5b6b82; font-size:12px; margin-top:26px;}
+  @media(max-width:480px){ h1{font-size:22px;} .qtext{font-size:17px;} .score-big{font-size:46px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 시작 화면 -->
+  <div id="start" class="card">
+    <span class="badge">김형환 교수님 · 1인기업 CEO 경영스쿨</span>
+    <h1>🎯 경영게임</h1>
+    <p class="sub">강의 1~4회의 핵심을 <span class="brand">100문제</span> 중 <span class="brand">랜덤 10문제</span>로!<br>매 게임마다 아래 4대 정의는 반드시 출제됩니다.</p>
+    <div class="defs">
+      <div class="def"><b>비전</b>이란 나를 움직이는 가시화된 미래동력이다.</div>
+      <div class="def"><b>경영</b>이란 바람직한 희망이 아니라 구체적인 업무로 성과를 만드는 것이다.</div>
+      <div class="def"><b>전략</b>이란 기업의 목표 달성을 위한 선택적 행동계획이다.</div>
+      <div class="def"><b>실행</b>이란 단순한 결정으로 단계별 경험을 통해 이루는 단기적 성과를 만드는 행동이다.</div>
+    </div>
+    <button class="btn-main" onclick="startGame()">게임 시작 ▶</button>
+  </div>
+
+  <!-- 퀴즈 화면 -->
+  <div id="quiz" class="card" style="display:none;">
+    <div class="topbar">
+      <span class="qcount" id="qcount"></span>
+      <span class="cat" id="cat"></span>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="qtype" id="qtype"></div>
+    <div class="qtext" id="qtext"></div>
+    <div id="answers"></div>
+    <div class="nav">
+      <button class="btn-main" id="nextBtn" onclick="next()" disabled>다음 →</button>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="result" class="card" style="display:none;">
+    <span class="badge">결과</span>
+    <div class="score-big" id="scoreBig"></div>
+    <div class="score-sub" id="scoreSub"></div>
+    <div class="grade" id="grade"></div>
+    <button class="btn-main" onclick="startGame()">🔄 다시 도전</button>
+    <button class="btn-ghost" onclick="goHome()">처음으로</button>
+    <div class="review" id="review">
+      <h3>📒 오답노트 & 해설</h3>
+      <div id="reviewList"></div>
+    </div>
+    <div class="foot">1인기업 CEO 경영스쿨 · 김형환</div>
+  </div>
+</div>
+
+<script>
+/* ======================= 문제 은행 (약 100문제) =======================
+   type:"mc" → opts 배열, a = 정답 인덱스(0부터)
+   type:"ox" → a = true(O가 정답) / false(X가 정답)
+   concept   → vision/management/strategy/execution 은 매 게임 필수 출제
+======================================================================= */
+const BANK = [
+/* ---------- 핵심정의: 비전 (필수) ---------- */
+{c:"핵심정의",concept:"vision",type:"mc",q:"김형환 교수님이 정의한 '비전'은?",opts:["나를 움직이는 가시화된 미래동력","바람직한 희망을 품는 것","목표 달성을 위한 선택적 행동계획","단계별 경험을 통한 단기적 성과 행동"],a:0,exp:"비전이란 <b>나를 움직이는 가시화된 (감성적) 미래동력</b>이다. 아침에 비전을 보고 일어나라고 강조한다."},
+{c:"핵심정의",concept:"vision",type:"ox",q:"비전이란 '나를 움직이는 가시화된 미래동력'이다.",a:true,exp:"맞다. 비전은 나를 움직이게 만드는 가시화된 미래동력으로, 연애에 비유된다."},
+{c:"핵심정의",concept:"vision",type:"mc",q:"강의에서 '올바른 비전'의 예로 맞는 것은?",opts:["5년 뒤 숫자로 된 결과","행복하게 살기","열정적으로 살기","열심히 살기"],a:0,exp:"비전은 <b>5년 뒤 내가 이루는 숫자로 된 결과</b>여야 한다. '행복하게/열정적으로/열심히 살기'는 비전이 될 수 없다."},
+
+/* ---------- 핵심정의: 경영 (필수) ---------- */
+{c:"핵심정의",concept:"management",type:"mc",q:"'경영'의 정의로 올바른 것은?",opts:["바람직한 희망이 아니라 구체적인 업무로 성과를 만드는 것","나를 움직이는 가시화된 미래동력","목표 달성을 위한 선택적 행동계획","즐기면서 천천히 성장하는 것"],a:0,exp:"경영이란 <b>바람직한 희망이 아니라 구체적인 업무로 성과를 만드는 것</b>이다."},
+{c:"핵심정의",concept:"management",type:"ox",q:"경영이란 '바람직한 희망'을 품는 것이다.",a:false,exp:"아니다. 경영은 바람직한 '희망'이 아니라 <b>구체적인 업무로 성과를 만드는 것</b>이다."},
+{c:"핵심정의",concept:"management",type:"mc",q:"경영에서 '구체적인 업무'에 해당하는 핵심 도구는?",opts:["체크리스트","SWOT 분석","멘토 인터뷰","비전보드"],a:0,exp:"구체적인 업무 = <b>체크리스트</b>. 외과수술 안전관리에서 비롯됐으며 성공 확률을 높인다."},
+
+/* ---------- 핵심정의: 전략 (필수) ---------- */
+{c:"핵심정의",concept:"strategy",type:"mc",q:"'전략'의 정의로 올바른 것은?",opts:["기업의 목표 달성을 위한 선택적 행동계획","구체적 업무로 성과를 만드는 것","나를 움직이는 미래동력","단계별 경험으로 만든 단기 성과"],a:0,exp:"전략이란 <b>기업의 목표 달성을 위한 선택적 행동계획</b>이다."},
+{c:"핵심정의",concept:"strategy",type:"ox",q:"전략은 반드시 해야만 하는 필수 행동계획이다.",a:false,exp:"아니다. 전략은 '<b>선택적</b>' 행동계획이다. 할 수도, 안 할 수도 있으며 '안 하는 것'도 하나의 방법이다."},
+{c:"핵심정의",concept:"strategy",type:"mc",q:"전략에서 가장 강조한 키워드는?",opts:["차별화","모방","다수 추종","안정성"],a:0,exp:"전략의 핵심은 <b>차별화</b>. 남 따라가지 말고 내 강점·고객·비전을 조합해 내 길을 가라."},
+
+/* ---------- 핵심정의: 실행 (필수) ---------- */
+{c:"핵심정의",concept:"execution",type:"mc",q:"'실행'의 정의로 올바른 것은?",opts:["단순한 결정으로 단계별 경험을 통해 이루는 단기적 성과를 만드는 행동","복잡한 분석으로 장기 성과를 만드는 행동","희망을 구체화하는 것","외부 환경을 통제하는 것"],a:0,exp:"실행이란 <b>단순한 결정으로 단계별 경험을 통해 이루는 단기적 성과를 만드는 행동</b>이다. (단순·단계·단기)"},
+{c:"핵심정의",concept:"execution",type:"ox",q:"실행이란 복잡한 분석을 통해 장기적 성과를 만드는 행동이다.",a:false,exp:"아니다. 실행은 <b>단순한 결정, 단계별 경험, 단기적 성과</b>가 핵심이다."},
+{c:"핵심정의",concept:"execution",type:"mc",q:"실행력이 낮은 사람들의 공통점으로 언급된 것은?",opts:["생각이 많고 복잡하다","결정을 빨리 한다","단순하게 행동한다","단계별로 차근차근 한다"],a:0,exp:"실행력이 낮은 사람은 <b>생각이 많고 복잡</b>하다. 실행은 일단 단순하게 하는 것이다."},
+
+/* ---------- 사명·비전 ---------- */
+{c:"사명·비전",type:"mc",q:"사명문에서 가장 중요한 요소는?",opts:["고객","매출","경쟁사","트렌드"],a:0,exp:"사명문에서 가장 중요한 것은 <b>고객</b>이다. 핵심가치는 고객에게 내가 누구인지 알려주는 가치다."},
+{c:"사명·비전",type:"mc",q:"사명(Mission)을 구성하는 3요소가 아닌 것은?",opts:["매출 목표","존재 목적","존재 가치","행동 규범(핵심가치)"],a:0,exp:"사명은 <b>존재 목적·존재 가치·행동 규범(핵심가치)</b>로 구성된다."},
+{c:"사명·비전",type:"ox",q:"비전의 특징은 '플러스 5년'이다.",a:true,exp:"맞다. 비전은 +5년. 5년 뒤 내가 원하는 숫자로 된 결과를 그린다."},
+{c:"사명·비전",type:"mc",q:"비전(5년 뒤 결과)은 궁극적으로 누구에게 이익이 되어야 하나?",opts:["나의 고객","나 자신","가족","경쟁자"],a:0,exp:"비전의 결과는 <b>고객에게 이익</b>이 되어야 한다. 그것이 가치를 높인다."},
+{c:"사명·비전",type:"ox",q:"사명·비전문은 출력해서 책상·냉장고 등에 붙이라고 했다.",a:true,exp:"맞다. 출력해 벽·냉장고·매장·명함에 붙이고 인증샷을 찍으라 했다."},
+{c:"사명·비전",type:"mc",q:"비전을 무엇에 비유했나?",opts:["연애","마라톤","등산","계약"],a:0,exp:"비전은 <b>연애</b>와 비슷하다. 나를 움직이게 만들고 엉뚱한 짓도 하게 만든다."},
+{c:"사명·비전",type:"mc",q:"핵심가치(행동규범)를 볼펜의 어느 부위에 비유했나?",opts:["촉(펜촉)","뚜껑","몸통","클립"],a:0,exp:"핵심가치 = 볼펜의 <b>촉</b>. 촉이 빠지면 아무리 비싼 볼펜도 볼펜이 아니다."},
+{c:"사명·비전",type:"mc",q:"비전을 잘게 쪼개는 순서로 옳은 것은?",opts:["5년 → 1년 → 3개월 → 매일(체크리스트)","매일 → 3개월 → 1년 → 5년","1년 → 5년 → 매일","3개월 → 1년 → 5년"],a:0,exp:"5년 비전을 <b>1년·3개월·매일(체크리스트)</b>로 쪼개어 관리한다."},
+{c:"사명·비전",type:"ox",q:"행동규범(핵심가치)이 없으면 '그때그때 달라요'가 된다.",a:true,exp:"맞다. 핵심가치가 없으면 일관성이 사라져 그때그때 달라지고 신뢰를 잃는다."},
+{c:"사명·비전",type:"mc",q:"위대한(그레이트) 사업이 되려면 '좋은 일'을 넘어 무엇을 해야 하나?",opts:["옳은 일","쉬운 일","돈 되는 일","유행하는 일"],a:0,exp:"'좋은 일'의 반대는 '<b>옳은 일</b>'. 좋고 좋아서는 위대해질 수 없고 옳은 사업을 해야 한다."},
+
+/* ---------- 경영·마인드 ---------- */
+{c:"경영·마인드",type:"mc",q:"경영자의 기본 마인드 3가지는?",opts:["결정 · 피드백 · 자신감","열정 · 성실 · 인내","돈 · 인맥 · 운","속도 · 규모 · 효율"],a:0,exp:"경영자 마인드 3가지 = <b>결정, 피드백, 자신감</b>."},
+{c:"경영·마인드",type:"ox",q:"내가 결정하지 않으면 외부 환경이 나를 결정한다.",a:true,exp:"맞다. 스스로 결정하지 않으면 원치 않는 결과가 나를 결정한다."},
+{c:"경영·마인드",type:"mc",q:"계란 비유: '외부 충격'으로 깨진 계란은?",opts:["계란후라이(요리감)","병아리(생명)","상한 계란","그대로 보존"],a:0,exp:"외부 충격으로 깨지면 <b>후라이</b>, 스스로 깨면 <b>생명(병아리)</b>. 스스로 결정하라는 비유."},
+{c:"경영·마인드",type:"mc",q:"강의에서 말한 '자신감'은 어디서 얻어지나?",opts:["결과가 아닌 '의미'","남의 인정","돈과 성공","운"],a:0,exp:"자신감은 결과가 아니라 <b>의미</b>에서 얻어진다."},
+{c:"경영·마인드",type:"mc",q:"비전-경영-전략-실행 시스템에서 '매일의 목표'는?",opts:["체크리스트","연 매출","5년 비전","핵심가치"],a:0,exp:"매일의 목표 = <b>체크리스트</b>. 했는지/안 했는지만 체크하는 매일의 게임."},
+{c:"경영·마인드",type:"mc",q:"'마인드·스킬·툴' 중 시간관리·기술에 해당하는 것은?",opts:["스킬","마인드","툴","비전"],a:0,exp:"시간관리·기술의 반복 = <b>스킬</b>. (마인드=목표·왜, 툴=지식·도구)"},
+{c:"경영·마인드",type:"mc",q:"'마인드·스킬·툴' 중 지식·도구에 해당하는 것은?",opts:["툴","스킬","마인드","성과"],a:0,exp:"지식·도구 = <b>툴</b>. 공부와 학습으로 채운다."},
+{c:"경영·마인드",type:"mc",q:"'마인드·스킬·툴' 중 목표·방향성(왜 하는가)에 해당하는 것은?",opts:["마인드","스킬","툴","피드백"],a:0,exp:"목표·왜 하는가 = <b>마인드</b>. 내 의도와 방향성이다."},
+{c:"경영·마인드",type:"mc",q:"'성과'의 정의로 옳은 것은?",opts:["의도를 가지고 만들어낸 결과","우연히 얻어진 결과","남에게 인정받은 것","대박·떡상"],a:0,exp:"성과 = <b>의도를 가지고 만들어낸 결과</b>. 자연·우연의 결과와 구분된다."},
+{c:"경영·마인드",type:"ox",q:"성과와 결과는 같은 의미다.",a:false,exp:"다르다. <b>결과</b>는 자연·우연의 산물, <b>성과</b>는 의도를 가지고 만든 결과다."},
+{c:"경영·마인드",type:"mc",q:"'퍼포먼스(performance)'의 동의어로 쓴 단어는?",opts:["성과","결과","수익","행운"],a:0,exp:"퍼포먼스 = <b>성과</b>와 동의어."},
+{c:"경영·마인드",type:"mc",q:"지식경영의 순환 순서로 옳은 것은?",opts:["습득 → 정리 → 축적 → 공유 → 적용","적용 → 공유 → 습득 → 정리","공유 → 적용 → 축적 → 습득","정리 → 습득 → 적용 → 공유"],a:0,exp:"지식경영 순환: <b>습득 → 정리 → 축적 → 공유 → 적용</b>."},
+{c:"경영·마인드",type:"mc",q:"경험·무형적 요소로 이루어진 '암묵지(안목지)'와 대비되는 것은?",opts:["형식지(매뉴얼)","데이터","지혜","지성"],a:0,exp:"암묵지(경험·무형)의 반대는 <b>형식지</b>(매뉴얼·명시적 정보)."},
+{c:"경영·마인드",type:"mc",q:"'데이터 → 정보 → 지식 → ( ) → 지혜' 에서 '선택의 옵션'에 해당하는 것은?",opts:["지성","감성","경험","상상"],a:0,exp:"데이터→정보→지식→<b>지성(선택의 옵션)</b>→지혜(경험의 축적)."},
+{c:"경영·마인드",type:"mc",q:"강의에서 정의한 '상품'이란?",opts:["자신의 가치를 만드는 도구","팔아서 돈 버는 물건","경쟁 우위 수단","고객이 원하는 것"],a:0,exp:"상품 = <b>자신의 가치를 만드는 도구</b>."},
+{c:"경영·마인드",type:"mc",q:"강의에서 정의한 '고객'이란?",opts:["나의 성과를 통해 최고의 이익을 얻는 사람","돈을 내는 사람","제품을 사는 사람","나를 좋아하는 사람"],a:0,exp:"고객 = <b>나의 성과를 통해 최고의 이익을 얻는 사람</b>."},
+{c:"경영·마인드",type:"mc",q:"강의에서 정의한 '경영자'란?",opts:["자신의 성과에 책임지는 사람","직원을 거느린 사람","돈을 많이 버는 사람","사업자등록을 한 사람"],a:0,exp:"경영자 = <b>자신의 성과에 책임지는 사람</b>."},
+{c:"경영·마인드",type:"ox",q:"체크리스트는 외과 의사의 수술 안전관리에서 비롯됐다.",a:true,exp:"맞다. 체크리스트는 외과 수술을 안전하게 관리하는 방법에서 나왔다."},
+{c:"경영·마인드",type:"mc",q:"체크리스트의 핵심 목적은?",opts:["성공 확률을 높이는 것","완벽을 보장하는 것","대박을 내는 것","남에게 보여주는 것"],a:0,exp:"체크리스트는 빠짐을 막고 <b>확률을 높여</b> 운(대박/떡상)의 기회를 키운다."},
+{c:"경영·마인드",type:"mc",q:"'3과 1은 하나다'가 의미하는 것은?",opts:["핵심가치로 통일된다","세 번 하면 하나가 된다","3명이 1팀","수익 3:1 분배"],a:0,exp:"'3과 1은 하나다' = <b>핵심가치로 통일</b>된다는 마인드 원칙."},
+
+/* ---------- 전략(3회) ---------- */
+{c:"전략",type:"mc",q:"차별화 전략을 만드는 3가지 키워드는?",opts:["외부환경 · 문제해결 · 심층집중","속도 · 규모 · 효율","돈 · 사람 · 시간","비전 · 사명 · 가치"],a:0,exp:"차별화 전략 3키워드: <b>외부환경 분석 · 문제해결 · 심층집중</b>."},
+{c:"전략",type:"ox",q:"외부 환경(기회·위협)은 내 마음대로 통제할 수 있다.",a:false,exp:"통제 불가. 환경은 주어진 조건이라 통제되지 않는다(예측은 어느 정도 가능)."},
+{c:"전략",type:"ox",q:"경영은 예측은 어렵지만 통제는 가능하다.",a:true,exp:"맞다. 경영은 예측이 안 돼도 <b>통제는 가능</b>하다. (경제=환경 문제, 통제 불가)"},
+{c:"전략",type:"mc",q:"'문제'를 무엇이라고 정의했나?",opts:["갭(Gap)","위기","실패","손해"],a:0,exp:"문제 = <b>갭(Gap)</b>. 가장 좋은 질문은 이 갭을 묻는 질문이다."},
+{c:"전략",type:"mc",q:"줄탁동시에서 '밖의 어미닭'이 상징하는 것은?",opts:["시장·고객","경쟁자","정부","가족"],a:0,exp:"어미닭 = <b>시장·고객</b>, 안의 병아리 = 우리. 둘이 동시에 쪼아야 껍질이 깨진다."},
+{c:"전략",type:"mc",q:"전략에서 가장 중요한 세 가지를 조합하라 했는데, 그 셋은?",opts:["강점 · 고객 · 비전","돈 · 인맥 · 운","속도 · 가격 · 품질","사명 · 가치 · 성과"],a:0,exp:"전략은 내 <b>강점·고객·비전</b>을 조합해 세운다."},
+{c:"전략",type:"ox",q:"'세상에 돈 되는 아이템도, 돈 안 되는 아이템도 없다'고 했다.",a:true,exp:"맞다. 아이템보다 각자의 강점·환경에 맞는 전략이 중요하다."},
+{c:"전략",type:"mc",q:"전략독서로 읽어야 할 책은?",opts:["내 고객이 읽는(나와 관련된) 책","베스트셀러","아무 책이나 많이","교수 지정도서"],a:0,exp:"<b>나와 관련된, 내 고객이 읽는 책</b>을 읽어라. 지정도서 없이 각자의 전략독서를 한다."},
+{c:"전략",type:"mc",q:"'사건'을 뜻하는 시간 개념은?",opts:["카이로스","크로노스","파토스","에토스"],a:0,exp:"<b>카이로스 = 사건</b>, 크로노스 = 일상. 사건만 많으면 오래 행복하지 못하다."},
+{c:"전략",type:"ox",q:"사건(카이로스)이 많을수록 오래 행복하게 산다.",a:false,exp:"아니다. 행복·성공은 사건이 아니라 <b>일상(크로노스)</b>에서 축적된다."},
+{c:"전략",type:"mc",q:"1인 기업의 가장 중요한 힘은?",opts:["축적","속도","규모","운"],a:0,exp:"1인 기업의 힘은 <b>축적</b>. 복리처럼 일상이 차곡차곡 쌓인다."},
+{c:"전략",type:"mc",q:"OKR이 의미하는 것은?",opts:["Objective Key Result(3개월 집중)","Online Knowledge Resource","Output Key Ratio","Operation Key Role"],a:0,exp:"OKR = <b>Objective·Key Result</b>. 3개월 동안 집중하는 차별화된 자기경영."},
+{c:"전략",type:"mc",q:"네이비실 점호(AAR) 피드백 항목이 아닌 것은?",opts:["타인을 평가하기","오늘의 목표","결과와 차이·원인","내일 할 일/하지 말 일"],a:0,exp:"AAR은 목표·결과·차이와 원인·내일 할일/하지말일을 점검한다. '<b>타인 평가</b>'는 없다."},
+{c:"전략",type:"mc",q:"SWOT에서 '기회·위협'은 어디에 속하나?",opts:["외부 조건","내부 조건","과거 조건","미래 조건"],a:0,exp:"강점·약점=내부, <b>기회·위협=외부 조건</b>."},
+{c:"전략",type:"mc",q:"SWOT에서 '위협'의 정의는?",opts:["부정적 외부환경","내부 약점","미래의 불안","경쟁사 강점"],a:0,exp:"기회=긍정적 외부환경, <b>위협=부정적 외부환경</b>(경쟁 증가 등)."},
+{c:"전략",type:"ox",q:"점=선택(결정), 선=실행, 면=기회 의 관계가 맞다.",a:true,exp:"맞다. 점(선택·결정)이 모여 선(실행)이 되고, 결정·실행이 면(기회)을 만든다."},
+{c:"전략",type:"mc",q:"개구리 우물 비유의 교훈은?",opts:["조금씩 올라가 시야를 넓혀라","우물 안이 안전하다","빨리 뛰쳐나가라","남이 끌어줄 때를 기다려라"],a:0,exp:"개구리는 <b>조금씩 올라갈수록</b> 하늘이 넓어진다. 단계적으로 시야를 넓혀라."},
+
+/* ---------- SWOT 전략매트릭스 · 전략평가(4회) ---------- */
+{c:"전략매트릭스",type:"mc",q:"강점(S)+기회(O) 칸에 세우는 전략은?",opts:["단기전략(즉시)","장기전략","다각화전략","철수전략"],a:0,exp:"SO = <b>단기전략(즉시)</b>. 강점과 기회로 쉬운 것부터 즉시 한다."},
+{c:"전략매트릭스",type:"mc",q:"약점(W)+기회(O) 칸에 세우는 전략은?",opts:["장기전략(꾸준)","단기전략","다각화전략","철수전략"],a:0,exp:"WO = <b>장기전략(꾸준)</b>. 약점을 보완하며 기회를 살린다."},
+{c:"전략매트릭스",type:"mc",q:"강점(S)+위협(T) 칸에 세우는 전략은?",opts:["다각화(차별화)전략","단기전략","장기전략","철수전략"],a:0,exp:"ST = <b>다각화(차별화)전략</b>. 강점 중 일부로 위협을 이기는 나만의 방법."},
+{c:"전략매트릭스",type:"mc",q:"약점(W)+위협(T) 칸에 세우는 전략은?",opts:["철수전략","단기전략","장기전략","다각화전략"],a:0,exp:"WT = <b>철수전략</b>. 다 할 수 없으니 포기·내려놓을 것을 정한다."},
+{c:"전략매트릭스",type:"mc",q:"'철수전략'의 핵심은?",opts:["포기하고 내려놓을 것을 정함","모든 걸 다 함","경쟁자를 이김","비용을 줄임"],a:0,exp:"철수전략 = 약점+위협 상황에서 <b>포기·내려놓을 것</b>, 완벽하지 않아도 될 것을 정한다."},
+{c:"전략매트릭스",type:"mc",q:"'다각화 전략'의 핵심은?",opts:["강점 중 일부를 골라 위협을 이기는 나만의 새 방법","모든 강점을 다 쓰는 것","약점을 모두 보완하는 것","경쟁자를 모방하는 것"],a:0,exp:"다각화는 모든 강점이 아니라 <b>일부 강점</b>으로 위협을 이기는 차별화된 아이디어다."},
+{c:"전략매트릭스",type:"ox",q:"작성한 전략은 빠짐없이 전부 실행해야 한다.",a:false,exp:"아니다. '다 실행하면 죽는다.' <b>선별·평가</b>해서 우선순위를 골라 실행한다."},
+{c:"전략매트릭스",type:"mc",q:"전략 평가 기준 중 '하기 쉬운 것'이 높은 점수를 받는 항목은?",opts:["실행 가능성","효과성","가치성","시급성"],a:0,exp:"실행 가능성 = <b>쉬운 것</b>일수록 점수가 높다(만점 5점)."},
+{c:"전략매트릭스",type:"mc",q:"전략 평가에서 '만점 10점' 항목으로 묶인 것은?",opts:["효과성 · 시급성 · 가치성","실행가능 · 비용 · 소요시간","연관성 · 비용 · 효과성","가치성 · 연관성 · 비용"],a:0,exp:"만점 10점: <b>효과성·시급성·가치성</b>. 만점 5점: 실행가능·비용·소요시간·연관성."},
+{c:"전략매트릭스",type:"ox",q:"전략 평가에서 '소요시간'은 많이 걸릴수록 점수가 높다.",a:false,exp:"반대다. 시간이 <b>적게</b> 들수록 점수가 높다."},
+{c:"전략매트릭스",type:"mc",q:"전략을 평가하면 '하고 싶은 것'과 '해야 할 것'이 갈리는데, 택해야 할 것은?",opts:["해야 할 것","하고 싶은 것","둘 다","쉬운 것"],a:0,exp:"'하고 싶다'는 결과이지 전략이 아니다. 평가로 드러난 <b>해야 할 것</b>을 택한다."},
+{c:"전략매트릭스",type:"mc",q:"전략 평가표에서 '합계'는 어느 방향으로 계산하나?",opts:["가로(오른쪽)","세로(아래)","대각선","무관"],a:0,exp:"점수는 세로로 매기고, <b>합계는 가로(오른쪽)</b>로 더한 뒤 순위를 매긴다."},
+
+/* ---------- 실행·스토리(4회) ---------- */
+{c:"실행·스토리",type:"mc",q:"실행에서 중요한 3가지 요소는?",opts:["스토리 · 프로세스 · 지행격차","결정 · 피드백 · 자신감","강점 · 고객 · 비전","속도 · 규모 · 효율"],a:0,exp:"실행 3요소: <b>스토리(상상력) · 프로세스(단계력) · 지행격차(아는 것과 하는 것)</b>."},
+{c:"실행·스토리",type:"mc",q:"'스토리'는 무엇의 힘이라 했나?",opts:["상상력","기억력","체력","재력"],a:0,exp:"스토리 = <b>상상력</b>. 미래를 상상하면 지금 무엇을 선택해야 할지 보인다."},
+{c:"실행·스토리",type:"mc",q:"'프로세스'는 무엇의 힘이라 했나?",opts:["단계력","순발력","친화력","집중력"],a:0,exp:"프로세스 = <b>단계력</b>. 1·2·3단계를 잘 운영하면 지속적 성과가 난다."},
+{c:"실행·스토리",type:"mc",q:"지(知)와 행(行) 사이에 있다고 한 글자는?",opts:["즐길 낙(樂)","참을 인(忍)","빠를 속(速)","쉴 휴(休)"],a:0,exp:"知와 行 사이엔 <b>즐길 낙(樂)</b>. 즐기는 사람을 이길 수 없다."},
+{c:"실행·스토리",type:"ox",q:"'즐기는 사람은 절대 이길 수 없다'고 했다.",a:true,exp:"맞다. 지행격차를 메우는 힘은 '즐김'이며, 즐기는 사람을 이길 수 없다."},
+{c:"실행·스토리",type:"mc",q:"성과를 무엇에 두면 '도박'이 된다고 했나?",opts:["대박·떡상","작은 단계","꾸준함","과정"],a:0,exp:"성과를 <b>대박·떡상</b>에 두면 사업이 아니라 도박이 된다. 성과는 단계별로 쌓인다."},
+{c:"실행·스토리",type:"ox",q:"성장보다 성과가 중요하며, 성과가 성장을 만든다.",a:true,exp:"맞다. 아주 작은 성과(체크리스트)부터 쌓아야 성장이 된다."},
+{c:"실행·스토리",type:"mc",q:"매일 목표관리에 꼭 쓰게 한 것은?",opts:["오늘 감사한 일 3가지","오늘 번 돈","경쟁사 동향","내일 날씨"],a:0,exp:"매일 <b>감사한 일 3가지</b>를 쓰게 한다. 그것이 성과·성장을 만든다."},
+{c:"실행·스토리",type:"mc",q:"에비앙·백세주가 비싼 이유로 든 것은?",opts:["스토리가 있어서","품질이 좋아서","광고를 많이 해서","희소해서"],a:0,exp:"에비앙·백세주는 <b>스토리</b> 때문에 비싸게 팔린다(스토리 마케팅)."},
+{c:"실행·스토리",type:"mc",q:"삼다수에 없다고 아쉬워한 것은?",opts:["스토리","품질","유통망","가격경쟁력"],a:0,exp:"삼다수엔 <b>스토리</b>가 없어 비싸게 못 판다는 예시."},
+{c:"실행·스토리",type:"mc",q:"김형환 교수의 창업교육 출신 슈퍼스타 가수는?",opts:["장범준","박효신","성시경","김범수"],a:0,exp:"<b>장범준</b>(버스커 버스커). 2011년 슈퍼스타K 도전이 실행전략에 있었다."},
+{c:"실행·스토리",type:"mc",q:"장범준의 팀(브랜드) 이름은?",opts:["버스커 버스커","울랄라세션","길거리 밴드","천안밴드"],a:0,exp:"<b>버스커 버스커</b>. '버스킹'에서 온 브랜드명이다."},
+{c:"실행·스토리",type:"mc",q:"슈퍼스타K에서 장범준의 가장 큰 특징은?",opts:["떨어져도 붙어도 늘 즐겼다","노래를 가장 잘했다","외모가 뛰어났다","심사위원과 친했다"],a:0,exp:"패자부활을 거듭하면서도 <b>늘 즐겼다</b>. 즐기는 사람을 이길 수 없다는 사례."},
+{c:"실행·스토리",type:"mc",q:"'Just do it'을 두 글자로 표현한 말은?",opts:["냥뛰(그냥 뛰어)","도전","열정","실천"],a:0,exp:"Just do it = '<b>냥뛰(그냥 뛰어)</b>'. 완벽한 때는 없으니 계획했으면 그냥 뛴다."},
+{c:"실행·스토리",type:"ox",q:"실행은 완벽한 때를 기다렸다가 해야 한다.",a:false,exp:"아니다. <b>완벽한 때는 없다.</b> 계획했으면 그 시점에 그냥 뛴다(냥뛰)."},
+{c:"실행·스토리",type:"mc",q:"강의에서 정리한 '스토리의 5요소'가 아닌 것은?",opts:["외부의 평가","자기 인정(가능성)","현실 인식","내적 동기"],a:0,exp:"스토리 5요소: 자기인정·현실인식·내적동기·문제해결·설득력. '<b>외부 평가</b>'는 아니다."},
+
+/* ---------- 인터뷰·질문법(2~3회) ---------- */
+{c:"인터뷰·질문",type:"mc",q:"좋은 질문의 형태는?",opts:["장답형(Why·How·What)","단답형(예/아니오)","유도형","압박형"],a:0,exp:"좋은 질문은 <b>장답형</b>으로 Why·How·What이 들어간다."},
+{c:"인터뷰·질문",type:"ox",q:"'제가 무슨 일을 하면 좋을까요?'는 좋은 인터뷰 질문이다.",a:false,exp:"아니다. 점집 간 격의 나쁜 질문. 자기 패를 다 까서 관계 형성에 좋지 않다."},
+{c:"인터뷰·질문",type:"mc",q:"인터뷰의 3단계 태도는?",opts:["질문 · 경청 · 공감","말하기 · 듣기 · 메모","소개 · 협상 · 마무리","관찰 · 분석 · 평가"],a:0,exp:"인터뷰는 <b>질문하고 · 경청하고 · 공감</b>한다."},
+{c:"인터뷰·질문",type:"mc",q:"강의에서 제시한 '경청'의 구체적 행동은?",opts:["고개를 끄덕인다","받아 적는다","눈을 감는다","질문을 멈춘다"],a:0,exp:"경청 = <b>고개를 끄덕인다</b>(이해했으니 편히 말하라는 신호)."},
+{c:"인터뷰·질문",type:"mc",q:"인터뷰에서 가장 먼저 지켜야 할 것은?",opts:["약속 시간(5분 전 입장)","좋은 질문지","선물 준비","복장"],a:0,exp:"인터뷰는 <b>시간 지키기</b>가 첫째. 9시 약속이면 5분 전에 들어가라."},
+{c:"인터뷰·질문",type:"mc",q:"질문을 잘하는 방송인으로 든 예는?",opts:["유재석","강호동","신동엽","김구라"],a:0,exp:"<b>유재석</b>형 질문이 좋은 질문의 예. 상대가 말하고 싶은 것을 묻는다."},
+{c:"인터뷰·질문",type:"ox",q:"인터뷰의 핵심 목적은 정보 획득보다 '관계 형성'이다.",a:true,exp:"맞다. 비즈니스에서 그분과의 <b>관계</b>가 무엇보다 중요하다."},
+{c:"인터뷰·질문",type:"mc",q:"멘토 인터뷰는 최소 몇 명을 권했나?",opts:["다섯 명","두 명","열 명","한 명"],a:0,exp:"멘토 인터뷰는 최소 <b>다섯 명</b>(더 해도 좋다)."},
+{c:"인터뷰·질문",type:"mc",q:"자신만의 '시그니처 질문'은 몇 개 정도 준비하라 했나?",opts:["약 10개","약 3개","약 30개","1개"],a:0,exp:"시그니처 질문 <b>약 10개</b>를 준비하라 했다."},
+
+/* ---------- 학습철학·태도 ---------- */
+{c:"학습·태도",type:"ox",q:"피드백 텀(일·주·월·3개월)이 길수록 더 성공한다.",a:true,exp:"맞다. 긴 텀까지 기억하고 피드백하는 사람이 더 성장·성공한다."},
+{c:"학습·태도",type:"mc",q:"외부 환경 변수의 가장 큰 특징은?",opts:["통제가 안 된다","예측이 쉽다","변하지 않는다","내가 만든다"],a:0,exp:"외부 변수는 <b>통제 불가</b>. 그럴 땐 내 태도·자세 등 할 수 있는 것만 한다."},
+{c:"학습·태도",type:"mc",q:"A에서 B로 가는 변화는 주로 어디서 해결되나?",opts:["일상","특별한 사건","자격증","학위"],a:0,exp:"대부분의 문제는 <b>일상의 문제</b>다. 일상에서 조금씩 해결된다."},
+{c:"학습·태도",type:"mc",q:"강의에서 말한 '칭찬'이란?",opts:["상대를 행복하게 만드는 가장 기본 행동","잘한 일에 주는 보상","아부의 일종","평가의 결과"],a:0,exp:"칭찬 = <b>상대를 행복하게 만드는 가장 기본적인 행동</b>."},
+{c:"학습·태도",type:"ox",q:"인생은 한 방, 즉 대박을 노리는 것이 옳은 경영이다.",a:false,exp:"아니다. '인생 한 방'은 쪽박. <b>소박→중박</b>으로 단계적·지속적으로 간다."},
+{c:"학습·태도",type:"mc",q:"매일의 목표(체크리스트)를 무엇이라 비유했나?",opts:["매일의 게임","숙제","의무","규칙"],a:0,exp:"체크리스트는 <b>매일의 게임</b>. 했는지/됐는지/안 됐는지만 체크한다."},
+{c:"학습·태도",type:"ox",q:"강의만 듣고 적용하지 않아도 성과는 난다.",a:false,exp:"아니다. 강의만 듣는 건 소용없고 반드시 <b>삶에 적용(실행)</b>해야 성과가 난다."},
+{c:"학습·태도",type:"mc",q:"좋은 질문의 비유로, 질문은 무엇을 보석으로 만든다 했나?",opts:["원석","돌","모래","유리"],a:0,exp:"질문은 <b>원석</b>을 보석으로 만드는 과정에 비유된다."}
+];
+
+/* ======================= 게임 로직 ======================= */
+const CORE = ["vision","management","strategy","execution"];
+let quiz = [], idx = 0, answers = [];
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function pickOne(pool){ return pool[Math.floor(Math.random()*pool.length)]; }
+
+function buildQuiz(){
+  const chosen = [];
+  // 1) 핵심정의 4개념 각 1문제 보장
+  CORE.forEach(con=>{
+    const pool = BANK.filter(q=>q.concept===con);
+    chosen.push(pickOne(pool));
+  });
+  // 2) 나머지 6문제 랜덤 (중복·핵심정의 제외)
+  const rest = shuffle(BANK.filter(q=>!chosen.includes(q) && !q.concept));
+  chosen.push(...rest.slice(0,6));
+  // 3) 전체 셔플 + 객관식 보기 셔플
+  shuffle(chosen);
+  return chosen.map(q=>{
+    if(q.type==="mc"){
+      const order = shuffle(q.opts.map((t,i)=>({t,correct:i===q.a})));
+      return {...q, _opts:order};
+    }
+    return {...q};
+  });
+}
+
+function startGame(){
+  quiz = buildQuiz(); idx = 0; answers = new Array(quiz.length).fill(null);
+  show("quiz"); render();
+}
+function show(id){
+  ["start","quiz","result"].forEach(s=>document.getElementById(s).style.display = s===id?"block":"none");
+  window.scrollTo(0,0);
+}
+function goHome(){ show("start"); }
+
+function render(){
+  const q = quiz[idx];
+  document.getElementById("qcount").textContent = `문제 ${idx+1} / ${quiz.length}`;
+  document.getElementById("cat").textContent = q.c;
+  document.getElementById("fill").style.width = `${(idx)/quiz.length*100}%`;
+  document.getElementById("qtype").textContent = q.type==="ox" ? "◯ / ✕ 문제" : "객관식";
+  document.getElementById("qtext").textContent = q.q;
+
+  const box = document.getElementById("answers");
+  box.innerHTML = "";
+  if(q.type==="ox"){
+    box.className = "ox";
+    [["O",true],["X",false]].forEach(([label,val])=>{
+      const b = document.createElement("button");
+      b.className = "opt" + (answers[idx]===val?" sel":"");
+      b.textContent = label==="O" ? "◯" : "✕";
+      b.onclick = ()=>{ answers[idx]=val; render(); };
+      box.appendChild(b);
+    });
+  } else {
+    box.className = "opts";
+    const letters = ["①","②","③","④"];
+    q._opts.forEach((o,i)=>{
+      const b = document.createElement("button");
+      b.className = "opt" + (answers[idx]===i?" sel":"");
+      b.innerHTML = `<span class="mark">${letters[i]}</span><span>${o.t}</span>`;
+      b.onclick = ()=>{ answers[idx]=i; render(); };
+      box.appendChild(b);
+    });
+  }
+  const btn = document.getElementById("nextBtn");
+  btn.disabled = answers[idx]===null;
+  btn.textContent = idx===quiz.length-1 ? "결과 보기 🏁" : "다음 →";
+}
+
+function next(){
+  if(answers[idx]===null) return;
+  if(idx < quiz.length-1){ idx++; render(); }
+  else finish();
+}
+
+function isCorrect(q,ans){
+  if(q.type==="ox") return ans===q.a;
+  return q._opts[ans] && q._opts[ans].correct;
+}
+
+function finish(){
+  let score = 0;
+  quiz.forEach((q,i)=>{ if(isCorrect(q,answers[i])) score++; });
+  show("result");
+  document.getElementById("scoreBig").textContent = `${score} / ${quiz.length}`;
+  document.getElementById("scoreSub").textContent = `100점 만점 환산 ${score*10}점`;
+  const grades = [
+    [10,"🏆 완벽한 1인 CEO! 즐기는 자를 이길 수 없죠."],
+    [8,"🔥 훌륭합니다! 전략이 몸에 뱄네요."],
+    [6,"👍 좋아요. 한 단계만 더 축적!"],
+    [4,"📈 시작이 반! 복습하면 쑥쑥 오릅니다."],
+    [0,"🌱 냥뛰! 강의 다시 보고 재도전해요."]
+  ];
+  document.getElementById("grade").textContent = grades.find(g=>score>=g[0])[1];
+
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  quiz.forEach((q,i)=>{
+    const ok = isCorrect(q,answers[i]);
+    let yours, correct;
+    if(q.type==="ox"){
+      yours = answers[i]===true?"◯":"✕";
+      correct = q.a?"◯":"✕";
+    } else {
+      yours = q._opts[answers[i]].t;
+      correct = q._opts.find(o=>o.correct).t;
+    }
+    const el = document.createElement("div");
+    el.className = "ritem " + (ok?"ok":"no");
+    el.innerHTML = `
+      <div class="rq">${i+1}. ${q.q}</div>
+      <div class="rline"><span class="tag ${ok?"ok":"no"}">${ok?"✓ 정답":"✗ 오답"}</span></div>
+      <div class="rline yours ${ok?"":"no"}">내 선택: ${yours}</div>
+      ${ok?"":`<div class="rline">정답: <b>${correct}</b></div>`}
+      <div class="exp">💡 ${q.exp}</div>`;
+    list.appendChild(el);
+  });
+}
+</script>
+</body>
+</html>
