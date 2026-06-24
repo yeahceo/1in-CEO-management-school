@@ -695,7 +695,12 @@ function render(){
       const b=document.createElement("button");
       b.className="ox"+(answers[idx]===val?" selected":"");
       b.textContent=label;
-      b.onclick=()=>{answers[idx]=val;render();};
+      b.onclick=()=>{
+        answers[idx]=val;
+        opts.querySelectorAll(".ox").forEach(el=>el.classList.remove("selected"));
+        b.classList.add("selected");
+        document.getElementById("nextBtn").disabled=false;
+      };
       opts.appendChild(b);
     });
   } else {
@@ -704,7 +709,15 @@ function render(){
       const b=document.createElement("button");
       b.className="opt"+(answers[idx]===i?" selected":"");
       b.innerHTML=`<span class="opt-num">${i+1}</span><span>${o.t}</span>`;
-      b.onclick=()=>{answers[idx]=i;render();};
+      b.onclick=()=>{
+        answers[idx]=i;
+        opts.querySelectorAll(".opt").forEach(el=>el.classList.remove("selected"));
+        b.classList.add("selected");
+        const num=b.querySelector(".opt-num");
+        opts.querySelectorAll(".opt-num").forEach(el=>{el.style.background="";el.style.color="";});
+        if(num){num.style.background="var(--accent)";num.style.color="#fff";}
+        document.getElementById("nextBtn").disabled=false;
+      };
       opts.appendChild(b);
     });
   }
