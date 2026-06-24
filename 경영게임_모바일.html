@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐹 경영게임 - 냥뛰!</title>
+<style>
+  :root {
+    --mint: #A8E6CF;
+    --mint-light: #C3F0DD;
+    --mint-dark: #7FC96B;
+    --orange: #F6A623;
+    --orange-light: #FBB13C;
+    --cream: #F2F6D8;
+    --text: #3A3A3A;
+    --text-muted: #9AA39A;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--mint) 0%, var(--mint-light) 50%, #E0F4F0 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--white);
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* 배경 풍경 */
+  .landscape {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 220px;
+    background: linear-gradient(180deg, rgba(168,230,207,0.3) 0%, rgba(181,224,160,0.8) 50%, #7FC96B 100%);
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .cloud {
+    position: absolute;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.7), rgba(255,255,255,0.2));
+    border-radius: 50px;
+    animation: float-cloud 20s linear infinite;
+  }
+
+  .cloud:nth-child(1) { width: 60px; height: 30px; top: 30%; left: -60px; animation-delay: 0s; }
+  .cloud:nth-child(2) { width: 80px; height: 40px; top: 50%; left: -80px; animation-delay: 5s; }
+  .cloud:nth-child(3) { width: 50px; height: 25px; top: 20%; left: -50px; animation-delay: 10s; }
+
+  @keyframes float-cloud {
+    0% { transform: translateX(0); opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { transform: translateX(calc(100vw + 200px)); opacity: 0; }
+  }
+
+  .tree {
+    position: absolute;
+    width: 40px;
+    height: 60px;
+    bottom: 0;
+  }
+
+  .tree:nth-child(4) { left: 10%; bottom: 20px; opacity: 0.6; }
+  .tree:nth-child(5) { right: 5%; bottom: 10px; opacity: 0.7; }
+
+  .tree::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #5BA94F 0%, #4A8F42 100%);
+    border-radius: 50% 50% 0 0;
+    animation: sway 4s ease-in-out infinite;
+  }
+
+  @keyframes sway { 0%, 100% { transform: rotateZ(-1deg); } 50% { transform: rotateZ(1deg); } }
+
+  /* 햄스터 마스코트 */
+  .hamster-area {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 2;
+    margin-bottom: 10px;
+  }
+
+  .hamster {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    animation: idle-bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes idle-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  .hamster.happy { animation: happy-jump 0.6s ease-out; }
+  @keyframes happy-jump { 0% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } 100% { transform: translateY(0) scale(1); } }
+
+  .hamster.sad { animation: sad-shake 0.4s ease-in-out; }
+  @keyframes sad-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  .hamster svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+  }
+
+  /* 홈 화면 */
+  #home {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 3;
+    position: relative;
+  }
+
+  .home-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .home-header h1 {
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .home-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .menu-icons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .menu-btn {
+    background: var(--cream);
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .menu-btn:hover { transform: scale(0.95); background: #E8EDD0; }
+  .menu-btn:active { transform: scale(0.9); }
+
+  .menu-btn span {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .menu-btn.new::after {
+    content: '✨';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #FF5A5A;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .banner {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    color: var(--white);
+    font-size: 14px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(246, 166, 35, 0.2);
+  }
+
+  .hamster-quote {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 16px 0;
+    font-size: 13px;
+    text-align: center;
+    position: relative;
+  }
+
+  .hamster-quote::before {
+    content: '💬';
+    display: block;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: auto;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(246, 166, 35, 0.3);
+  }
+
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(246, 166, 35, 0.4); }
+  .btn-start:active { transform: translateY(0); }
+
+  /* 퀴즈 화면 */
+  #quiz {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    padding: 16px;
+    z-index: 3;
+    position: relative;
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+
+  .quiz-count { color: var(--text-muted); font-weight: 600; }
+  .quiz-category {
+    background: rgba(166, 230, 207, 0.2);
+    color: var(--mint-dark);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange) 0%, var(--orange-light) 100%);
+    transition: width 0.3s ease;
+  }
+
+  .quiz-card {
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .quiz-type {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .quiz-question {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .option-btn {
+    background: var(--white);
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .option-btn:hover { border-color: var(--orange); background: #FFF8F0; }
+  .option-btn.selected { border-color: var(--orange); background: rgba(246, 166, 35, 0.08); }
+
+  .option-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--cream);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .option-btn.selected .option-mark { background: var(--orange); color: white; }
+
+  .ox-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .ox-btn {
+    background: var(--white);
+    border: 2px solid #E0E0E0;
+    border-radius: 14px;
+    padding: 20px;
+    font-size: 36px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ox-btn:hover { border-color: var(--orange); background: #FFF8F0; }
+  .ox-btn.selected { border-color: var(--orange); background: rgba(246, 166, 35, 0.08); }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: auto;
+  }
+
+  .btn-next:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* 결과 화면 */
+  #result {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 3;
+    position: relative;
+    overflow-y: auto;
+  }
+
+  .result-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .result-score {
+    font-size: 54px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 10px 0;
+  }
+
+  .result-percent {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .result-grade {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .result-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .result-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .result-btn-main {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    color: white;
+    grid-column: 1 / -1;
+  }
+
+  .result-btn-sub {
+    background: var(--cream);
+    color: var(--text);
+    border: none;
+  }
+
+  .review-header {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 16px 0 12px;
+    border-top: 1px solid #E0E0E0;
+    padding-top: 16px;
+  }
+
+  .review-item {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 3px solid #E0E0E0;
+  }
+
+  .review-item.correct { border-left-color: #22C55E; }
+  .review-item.wrong { border-left-color: #EF4444; }
+
+  .review-q {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .review-status {
+    font-size: 12px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .review-status.correct { color: #22C55E; }
+  .review-status.wrong { color: #EF4444; }
+
+  .review-exp {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    background: rgba(0,0,0,0.02);
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+  }
+
+  /* 반응형 */
+  @media (max-width: 480px) {
+    .container { max-width: 100%; border-radius: 0; min-height: 100dvh; }
+    .quiz-question { font-size: 16px; }
+    .result-score { font-size: 48px; }
+  }
+
+  /* 터치 피드백 */
+  @supports (cursor: pointer) {
+    .option-btn, .ox-btn { cursor: pointer; }
+  }
+
+  /* 보조 색상 */
+  .text-success { color: #22C55E; }
+  .text-error { color: #EF4444; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="landscape">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="tree"></div>
+    <div class="tree"></div>
+  </div>
+
+  <!-- 홈 화면 -->
+  <div id="home">
+    <div class="hamster-area">
+      <div class="hamster" id="mascot">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- 몸통 -->
+          <ellipse cx="50" cy="55" rx="35" ry="30" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+          <!-- 머리 -->
+          <circle cx="50" cy="35" r="28" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+          <!-- 귀 -->
+          <circle cx="32" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <circle cx="68" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <circle cx="32" cy="15" r="6" fill="#FFB3B3"/>
+          <circle cx="68" cy="15" r="6" fill="#FFB3B3"/>
+          <!-- 볼 -->
+          <circle cx="20" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+          <circle cx="80" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+          <!-- 눈 -->
+          <circle cx="40" cy="32" r="5" fill="#3A3A3A"/>
+          <circle cx="60" cy="32" r="5" fill="#3A3A3A"/>
+          <circle cx="41" cy="30" r="2" fill="white"/>
+          <circle cx="61" cy="30" r="2" fill="white"/>
+          <!-- 코 -->
+          <circle cx="50" cy="42" r="4" fill="#3A3A3A"/>
+          <!-- 입 -->
+          <path d="M 50 42 Q 45 48 40 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M 50 42 Q 55 48 60 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- 손 (기본) -->
+          <ellipse cx="32" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5" id="hand-left"/>
+          <ellipse cx="68" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5" id="hand-right"/>
+          <!-- 발 -->
+          <ellipse cx="38" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <ellipse cx="62" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="home-header">
+      <h1>🐹 경영게임</h1>
+      <p>냥뛰! 경영 한 판?</p>
+    </div>
+
+    <div class="menu-icons">
+      <button class="menu-btn" onclick="startRandomQuiz()">
+        🎲
+        <span>랜덤퀴즈</span>
+      </button>
+      <button class="menu-btn new" onclick="startCoreQuiz()">
+        📖
+        <span>핵심정의</span>
+      </button>
+      <button class="menu-btn" onclick="showReview()">
+        📒
+        <span>오답노트</span>
+      </button>
+      <button class="menu-btn" onclick="showScore()">
+        🏆
+        <span>내 점수</span>
+      </button>
+    </div>
+
+    <div class="banner">
+      📢 김형환 교수님 · 1인기업 CEO 경영스쿨
+    </div>
+
+    <div class="hamster-quote">
+      계획했으면 그냥 뛰어! 완벽한 때는 없다. 냥뛰!
+    </div>
+
+    <button class="btn-start" onclick="startRandomQuiz()">게임 시작 ▶</button>
+  </div>
+
+  <!-- 퀴즈 화면 -->
+  <div id="quiz">
+    <div class="quiz-header">
+      <span class="quiz-count" id="qcount"></span>
+      <span class="quiz-category" id="qcat"></span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="hamster-area" style="height: 120px; margin-bottom: 0;">
+      <div class="hamster" id="quiz-mascot" style="width: 80px; height: 80px;">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="50" cy="55" rx="35" ry="30" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+          <circle cx="50" cy="35" r="28" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+          <circle cx="32" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <circle cx="68" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <circle cx="32" cy="15" r="6" fill="#FFB3B3"/>
+          <circle cx="68" cy="15" r="6" fill="#FFB3B3"/>
+          <circle cx="20" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+          <circle cx="80" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+          <circle cx="40" cy="32" r="5" fill="#3A3A3A"/>
+          <circle cx="60" cy="32" r="5" fill="#3A3A3A"/>
+          <circle cx="41" cy="30" r="2" fill="white"/>
+          <circle cx="61" cy="30" r="2" fill="white"/>
+          <circle cx="50" cy="42" r="4" fill="#3A3A3A"/>
+          <path d="M 50 42 Q 45 48 40 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M 50 42 Q 55 48 60 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="32" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <ellipse cx="68" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <ellipse cx="38" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          <ellipse cx="62" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-type" id="qtype"></div>
+      <div class="quiz-question" id="qq"></div>
+      <div id="options" class="quiz-options"></div>
+    </div>
+
+    <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>다음 →</button>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="result">
+    <div class="result-header">
+      <div class="hamster-area" style="height: 100px; margin-bottom: 0;">
+        <div class="hamster" id="result-mascot" style="width: 80px; height: 80px;">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="50" cy="55" rx="35" ry="30" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+            <circle cx="50" cy="35" r="28" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="1"/>
+            <circle cx="32" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+            <circle cx="68" cy="15" r="10" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+            <circle cx="32" cy="15" r="6" fill="#FFB3B3"/>
+            <circle cx="68" cy="15" r="6" fill="#FFB3B3"/>
+            <circle cx="20" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+            <circle cx="80" cy="38" r="10" fill="#FFB3B3" opacity="0.7"/>
+            <circle cx="40" cy="32" r="5" fill="#3A3A3A"/>
+            <circle cx="60" cy="32" r="5" fill="#3A3A3A"/>
+            <circle cx="41" cy="30" r="2" fill="white"/>
+            <circle cx="61" cy="30" r="2" fill="white"/>
+            <circle cx="50" cy="42" r="4" fill="#3A3A3A"/>
+            <path d="M 50 42 Q 45 48 40 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M 50 42 Q 55 48 60 47" stroke="#3A3A3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="32" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+            <ellipse cx="68" cy="55" rx="8" ry="12" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+            <ellipse cx="38" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+            <ellipse cx="62" cy="82" rx="10" ry="8" fill="#F3D9A8" stroke="#D4AF8C" stroke-width="0.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="result-score" id="score"></div>
+      <div class="result-percent" id="percent"></div>
+      <div class="result-grade" id="grade"></div>
+    </div>
+
+    <div class="result-buttons">
+      <button class="result-btn result-btn-main" onclick="goHome()">🔄 다시 도전</button>
+      <button class="result-btn result-btn-sub" onclick="goHome()">홈으로</button>
+    </div>
+
+    <div class="review-header">📒 오답노트</div>
+    <div id="reviewList"></div>
+  </div>
+</div>
+
+<script>
+/* ============ 104개 문제 데이터 ============ */
+const QUESTIONS = [
+  {c:"핵심정의",concept:"vision",type:"mc",q:"김형환 교수님이 정의한 '비전'은?",opts:["나를 움직이는 가시화된 미래동력","바람직한 희망을 품는 것","목표 달성을 위한 선택적 행동계획","단계별 경험을 통한 단기적 성과 행동"],a:0,exp:"비전이란 **나를 움직이는 가시화된 (감성적) 미래동력**이다. 아침에 비전을 보고 일어나라."},
+  {c:"핵심정의",concept:"vision",type:"ox",q:"비전이란 '나를 움직이는 가시화된 미래동력'이다.",a:true,exp:"맞다. 비전은 나를 움직이게 만드는 가시화된 미래동력으로, 연애에 비유된다."},
+  {c:"핵심정의",concept:"vision",type:"mc",q:"올바른 비전의 예로 가장 적절한 것은?",opts:["5년 뒤 숫자로 된 결과","행복하게 살기","열정적으로 살기","영향력 있는 사람 되기"],a:0,exp:"비전은 **5년 뒤 내가 이루는 구체적이고 숫자로 된 결과**여야 한다. 추상적 감정이 아니라 **감각화된 미래**여야 아침에 일어날 수 있다."},
+  {c:"핵심정의",concept:"management",type:"mc",q:"'경영'의 가장 정확한 정의는?",opts:["바람직한 희망이 아니라 구체적인 업무로 성과를 만드는 것","나를 움직이는 가시화된 미래동력","목표 달성을 위한 선택적 행동계획","즐기면서 천천히 성장하는 것"],a:0,exp:"경영이란 **바람직한 희망(비전이나 꿈)이 아니라 구체적인 업무로 성과를 만드는 것**이다."},
+  {c:"핵심정의",concept:"management",type:"ox",q:"경영이란 '바람직한 희망'을 품는 것이다.",a:false,exp:"아니다. 경영은 바람직한 '희망'이 아니라 **구체적인 업무로 성과를 만드는 것**이다. 희망은 비전이다."},
+  {c:"핵심정의",concept:"management",type:"mc",q:"구체적인 업무를 가장 잘 관리하는 도구는?",opts:["체크리스트","마인드맵","멘토 인터뷰","SWOT 분석"],a:0,exp:"구체적인 업무 = **체크리스트**. 외과수술 안전관리에서 비롯됐으며, 빠짐을 막고 성공 확률을 높인다."},
+  {c:"핵심정의",concept:"strategy",type:"mc",q:"'전략'의 정의로 가장 정확한 것은?",opts:["기업의 목표 달성을 위한 선택적 행동계획","구체적 업무로 성과를 만드는 것","나를 움직이는 미래동력","단계별 경험으로 만든 단기 성과"],a:0,exp:"전략이란 **기업의 목표 달성을 위한 선택적 행동계획**이다. 핵심은 '선택적'이다."},
+  {c:"핵심정의",concept:"strategy",type:"ox",q:"전략은 반드시 해야만 하는 필수 행동계획이다.",a:false,exp:"아니다. 전략은 '**선택적**' 행동계획이다. 할 수도, 안 할 수도 있으며 '안 하는 것'도 하나의 전략이다."},
+  {c:"핵심정의",concept:"strategy",type:"mc",q:"전략을 세울 때 가장 강조된 핵심 키워드는?",opts:["차별화","속도","규모","가격 경쟁력"],a:0,exp:"전략의 핵심은 **차별화**. 남 따라가지 말고 내 강점·고객·비전을 조합해 내 길을 가라."},
+  {c:"핵심정의",concept:"execution",type:"mc",q:"'실행'의 정의로 가장 정확한 것은?",opts:["단순한 결정으로 단계별 경험을 통해 이루는 단기적 성과를 만드는 행동","복잡한 분석으로 장기 성과를 만드는 행동","희망을 구체화하는 것","외부 환경을 통제하는 것"],a:0,exp:"실행이란 **단순한 결정 + 단계별 경험 + 단기적 성과**가 핵심이다. (단순·단계·단기)"},
+  {c:"핵심정의",concept:"execution",type:"ox",q:"실행이란 완벽한 계획을 세운 후 신중하게 추진하는 행동이다.",a:false,exp:"아니다. 실행은 **단순한 결정, 단계별 경험, 단기적 성과**가 핵심이다. 완벽함을 기다리지 않는다."},
+  {c:"핵심정의",concept:"execution",type:"mc",q:"실행력이 낮은 사람들의 공통 특징은?",opts:["생각이 많고 복잡하다","결정을 빨리 한다","단순하게 행동한다","단계별로 차근차근 한다"],a:0,exp:"실행력이 낮은 사람은 **생각이 많고 복잡**하다. 실행은 일단 단순하게 하는 것이다."},
+  {c:"사명·비전",type:"mc",q:"사명(Mission)을 구성하는 핵심 3요소가 아닌 것은?",opts:["존재 목적","존재 가치","행동 규범","연간 매출 목표"],a:3,exp:"사명은 **존재 목적·존재 가치·행동 규범**으로 구성된다. 숫자 목표는 비전의 영역이다."},
+  {c:"사명·비전",type:"mc",q:"비전을 구체적으로 쪼개는 올바른 순서는?",opts:["5년 비전 → 1년 목표 → 3개월 목표 → 매일 체크리스트","매일 → 3개월 → 1년 → 5년","1년 → 5년 → 매일","3개월 → 1년 → 5년 역방향"],a:0,exp:"5년 비전을 **1년·3개월·매일(체크리스트)**로 역순으로 쪼개어 관리한다."},
+  {c:"사명·비전",type:"ox",q:"비전을 벽에 붙이고, 냉장고에 붙이고, 출력해서 인증샷을 찍으라고 했다.",a:true,exp:"맞다. 비전을 **가시화하고 매일 눈에 띄게** 해야 아침에 일어날 수 있다."},
+  {c:"사명·비전",type:"mc",q:"비전의 결과는 궁극적으로 누구에게 이익이 되어야 하나?",opts:["내 고객","나 자신","내 가족","경쟁사에 타격"],a:0,exp:"비전의 결과는 **고객에게 이익**이 되어야 한다. 그것이 가치를 높인다."},
+  {c:"사명·비전",type:"mc",q:"비전을 무엇에 비유했나?",opts:["연애","마라톤","등산","계약"],a:0,exp:"비전은 **연애**와 비슷하다. 나를 움직이게 만들고 엉뚱한 짓도 하게 만든다."},
+  {c:"사명·비전",type:"mc",q:"행동규범(핵심가치)을 볼펜의 어느 부위에 비유했나?",opts:["촉(펜촉)","뚜껑","몸통","클립"],a:0,exp:"핵심가치 = 볼펜의 **촉**. 촉이 빠지면 아무리 비싼 볼펜도 볼펜이 아니다."},
+  {c:"경영·마인드",type:"mc",q:"경영자의 기본 마인드 3가지는?",opts:["결정 · 피드백 · 자신감","열정 · 성실 · 인내","돈 · 인맥 · 운","속도 · 규모 · 효율"],a:0,exp:"경영자 마인드 3가지 = **결정, 피드백, 자신감**."},
+  {c:"경영·마인드",type:"ox",q:"내가 결정하지 않으면 외부 환경이 나를 결정한다.",a:true,exp:"맞다. 스스로 결정하지 않으면 원치 않는 결과(외부 결정)가 나를 지배한다."},
+  {c:"경영·마인드",type:"mc",q:"계란 비유: 외부 충격으로 깨진 계란은?",opts:["계란후라이","병아리","상한 계란","그대로 보존"],a:0,exp:"외부 충격(남의 결정)으로 깨지면 **후라이**, 스스로 깨면(자기결정) **생명(병아리)**. 스스로 결정하라는 비유."},
+  {c:"경영·마인드",type:"mc",q:"강의에서 말한 '자신감'은 어디서 얻어지나?",opts:["결과가 아닌 '의미'","남의 인정과 칭찬","돈과 성공의 크기","타고난 운과 재능"],a:0,exp:"자신감은 결과가 아니라 **의미(WHY)**에서 얻어진다."},
+  {c:"경영·마인드",type:"mc",q:"피드백은 언제 하는 것이 가장 효과적인가?",opts:["매일/주/월/3개월까지 기억하며","연말 1회 전체 피드백","큰 성공/실패 후에만","필요할 때마다 불규칙적으로"],a:0,exp:"피드백 텀이 길수록(일→주→월→3개월) **더 성공**한다. 긴 텀까지 기억하는 사람이 더 성장한다."},
+  {c:"경영·마인드",type:"mc",q:"'마인드·스킬·툴' 중 시간관리·기술에 해당하는 것은?",opts:["스킬","마인드","툴","성과"],a:0,exp:"시간관리·기술의 반복 = **스킬**. (마인드=목표, 툴=지식)"},
+  {c:"경영·마인드",type:"mc",q:"비전-경영-전략-실행 시스템에서 '매일의 목표'는?",opts:["체크리스트","연 매출 목표","5년 비전","핵심가치 선언"],a:0,exp:"매일의 목표 = **체크리스트**. 했는지/안 했는지만 체크하는 매일의 게임."},
+  {c:"경영·마인드",type:"mc",q:"체크리스트의 핵심 목적은?",opts:["성공 확률을 높이는 것","완벽을 보장하는 것","대박을 내는 것","남에게 보여주는 것"],a:0,exp:"체크리스트는 빠짐을 막고 **확률을 높여** 운(대박)의 기회를 키운다."},
+  {c:"상품·고객·성과",type:"mc",q:"강의에서 정의한 '성과'란?",opts:["의도를 가지고 만들어낸 결과","우연히 얻어진 좋은 결과","남에게 인정받은 것","대박·떡상 같은 큰 성공"],a:0,exp:"성과 = **의도를 가지고 만들어낸 결과**. 자연·우연의 결과와 구분된다."},
+  {c:"상품·고객·성과",type:"ox",q:"성과와 결과는 같은 의미다.",a:false,exp:"다르다. **결과**는 자연·우연의 산물, **성과**는 의도를 가지고 만든 결과다."},
+  {c:"상품·고객·성과",type:"mc",q:"강의에서 정의한 '상품'이란?",opts:["자신의 가치를 만드는 도구","팔아서 돈 버는 물건","경쟁 우위 수단","고객이 원하는 것"],a:0,exp:"상품 = **자신의 가치를 만드는 도구**. (도구로서 내가 성장한다)"},
+  {c:"상품·고객·성과",type:"mc",q:"강의에서 정의한 '고객'이란?",opts:["나의 성과를 통해 최고의 이익을 얻는 사람","돈을 내는 구매자","제품을 사용하는 사람","나를 좋아하고 응원하는 사람"],a:0,exp:"고객 = **나의 성과를 통해 최고의 이익을 얻는 사람**. 이익의 크기가 중요하다."},
+  {c:"상품·고객·성과",type:"mc",q:"강의에서 정의한 '경영자'란?",opts:["자신의 성과에 책임지는 사람","직원을 거느린 사람","돈을 많이 버는 사람","사업자등록을 한 사람"],a:0,exp:"경영자 = **자신의 성과에 책임지는 사람**. 조직 규모와 무관."},
+  {c:"상품·고객·성과",type:"mc",q:"경험·무형적 요소로 이루어진 지식(암묘지)과 대비되는 것은?",opts:["형식지","데이터","지혜","지성"],a:0,exp:"암묘지(경험·무형)의 반대는 **형식지**(매뉴얼·명시적 정보)."},
+  {c:"상품·고객·성과",type:"mc",q:"지식경영의 순환 순서로 옳은 것은?",opts:["습득 → 정리 → 축적 → 공유 → 적용","적용 → 공유 → 습득 → 정리","공유 → 적용 → 축적 → 습득","정리 → 습득 → 적용 → 공유"],a:0,exp:"지식경영 순환: **습득 → 정리 → 축적 → 공유 → 적용**."},
+  {c:"상품·고객·성과",type:"mc",q:"'3과 1은 하나다'가 의미하는 것은?",opts:["핵심가치로 통일된다","세 번 하면 하나가 된다","3명이 1팀을 이룬다","수익 3:1 분배"],a:0,exp:"'3과 1은 하나다' = **핵심가치로 통일**된다는 마인드 원칙."},
+  {c:"상품·고객·성과",type:"ox",q:"체크리스트는 외과 의사의 수술 안전관리에서 비롯됐다.",a:true,exp:"맞다. 체크리스트는 **외과 수술을 안전하게 관리**하는 방법에서 나왔다."},
+  {c:"전략",type:"mc",q:"차별화 전략을 만드는 3가지 핵심 키워드는?",opts:["외부환경 분석 · 문제해결 · 심층집중","속도 · 규모 · 효율","돈 · 사람 · 시간","비전 · 사명 · 가치"],a:0,exp:"차별화 전략 3키워드: **외부환경 분석 · 문제해결 · 심층집중**."},
+  {c:"전략",type:"ox",q:"외부 환경(기회·위협)은 내가 통제할 수 있다.",a:false,exp:"통제 불가. 환경은 주어진 조건이라 통제되지 않는다. (예측은 어느 정도 가능)"},
+  {c:"전략",type:"mc",q:"'문제(Problem)'를 무엇이라고 정의했나?",opts:["갭(Gap)","위기 상황","실패 경험","손해와 손실"],a:0,exp:"문제 = **갭(Gap)**. 현재와 목표 사이의 차이를 묻는 질문이 가장 좋은 질문이다."},
+  {c:"전략",type:"mc",q:"'사건'을 뜻하는 시간 개념은?",opts:["카이로스","크로노스","파토스","에토스"],a:0,exp:"**카이로스 = 사건**, 크로노스 = 일상. 사건만 많으면 오래 행복하지 못하다."},
+  {c:"전략",type:"ox",q:"사건(카이로스)이 많을수록 오래 행복하게 산다.",a:false,exp:"아니다. 행복·성공은 사건이 아니라 **일상(크로노스)**에서 축적된다."},
+  {c:"전략",type:"mc",q:"1인 기업의 가장 중요한 힘은?",opts:["축적","속도","규모","운"],a:0,exp:"1인 기업의 힘은 **축적**. 복리처럼 일상이 차곡차곡 쌓인다."},
+  {c:"전략",type:"mc",q:"줄탁동시에서 '밖의 어미닭'이 상징하는 것은?",opts:["시장·고객","경쟁자","정부·규제","멘토·코치"],a:0,exp:"어미닭 = **시장·고객**, 안의 병아리 = 우리. 둘이 동시에 쪼아야 껍질이 깨진다."},
+  {c:"전략",type:"mc",q:"전략을 세울 때 조합해야 할 3가지 핵심 요소는?",opts:["강점 · 고객 · 비전","돈 · 인맥 · 운","속도 · 가격 · 품질","사명 · 가치 · 성과"],a:0,exp:"전략은 내 **강점·고객·비전**을 조합해 세운다."},
+  {c:"전략",type:"ox",q:"세상에 돈 되는 아이템도, 돈 안 되는 아이템도 없다.",a:true,exp:"맞다. 아이템보다 각자의 강점·환경에 맞는 **전략이 중요**하다."},
+  {c:"전략",type:"mc",q:"OKR이 의미하는 것은?",opts:["Objective · Key Result","Online Knowledge Resource","Output Key Ratio","Operation Key Role"],a:0,exp:"OKR = **Objective·Key Result**. 3개월 동안 집중하는 차별화된 자기경영."},
+  {c:"전략매트릭스",type:"mc",q:"SWOT에서 '기회·위협'은 어느 범주에 속하나?",opts:["외부 조건","내부 조건","과거 조건","미래 조건"],a:0,exp:"강점·약점=내부, **기회·위협=외부 조건**."},
+  {c:"전략매트릭스",type:"mc",q:"강점(S) + 기회(O) 칸에 세우는 전략은?",opts:["단기전략","장기전략","다각화전략","철수전략"],a:0,exp:"SO = **단기전략(즉시)**. 강점과 기회로 쉬운 것부터 즉시 한다."},
+  {c:"전략매트릭스",type:"mc",q:"약점(W) + 기회(O) 칸에 세우는 전략은?",opts:["장기전략","단기전략","다각화전략","철수전략"],a:0,exp:"WO = **장기전략(꾸준)**. 약점을 보완하며 기회를 살린다."},
+  {c:"전략매트릭스",type:"mc",q:"강점(S) + 위협(T) 칸에 세우는 전략은?",opts:["다각화전략","단기전략","장기전략","철수전략"],a:0,exp:"ST = **다각화(차별화)전략**. 강점 중 일부로 위협을 이기는 나만의 방법."},
+  {c:"전략매트릭스",type:"mc",q:"약점(W) + 위협(T) 칸에 세우는 전략은?",opts:["철수전략","단기전략","장기전략","다각화전략"],a:0,exp:"WT = **철수전략**. 다 할 수 없으니 포기·내려놓을 것을 정한다."},
+  {c:"전략매트릭스",type:"ox",q:"작성한 전략은 빠짐없이 전부 실행해야 한다.",a:false,exp:"아니다. '다 실행하면 죽는다.' 선별·평가해서 우선순위를 골라 실행한다."},
+  {c:"전략매트릭스",type:"mc",q:"전략 평가 기준 중 '하기 쉬운 것'이 높은 점수를 받는 항목은?",opts:["실행 가능성","효과성","가치성","시급성"],a:0,exp:"실행 가능성 = **쉬운 것**일수록 점수가 높다(만점 5점)."},
+  {c:"전략매트릭스",type:"mc",q:"전략 평가에서 '만점 10점' 3개 항목은?",opts:["효과성 · 시급성 · 가치성","실행가능 · 비용 · 소요시간","연관성 · 비용 · 효과성","가치성 · 연관성 · 비용"],a:0,exp:"만점 10점: **효과성·시급성·가치성**. 만점 5점: 실행가능·비용·소요시간·연관성."},
+  {c:"실행·스토리",type:"mc",q:"실행에서 중요한 3가지 요소는?",opts:["스토리 · 프로세스 · 지행격차","결정 · 피드백 · 자신감","강점 · 고객 · 비전","속도 · 규모 · 효율"],a:0,exp:"실행 3요소: **스토리(상상력) · 프로세스(단계력) · 지행격차(아는 것과 하는 것)**."},
+  {c:"실행·스토리",type:"mc",q:"'스토리'는 무엇의 힘이라 했나?",opts:["상상력","기억력","체력","재력"],a:0,exp:"스토리 = **상상력**. 미래를 상상하면 지금 무엇을 선택해야 할지 보인다."},
+  {c:"실행·스토리",type:"mc",q:"'프로세스'는 무엇의 힘이라 했나?",opts:["단계력","순발력","친화력","집중력"],a:0,exp:"프로세스 = **단계력**. 1·2·3단계를 잘 운영하면 지속적 성과가 난다."},
+  {c:"실행·스토리",type:"mc",q:"지(知)와 행(行) 사이에 있다고 한 글자는?",opts:["즐길 낙(樂)","참을 인(忍)","빠를 속(速)","쉴 휴(休)"],a:0,exp:"知와 行 사이엔 **즐길 낙(樂)**. 즐기는 사람을 이길 수 없다."},
+  {c:"실행·스토리",type:"ox",q:"'즐기는 사람은 절대 이길 수 없다'고 했다.",a:true,exp:"맞다. 지행격차를 메우는 힘은 '즐김'이며, 즐기는 사람을 이길 수 없다."},
+  {c:"실행·스토리",type:"mc",q:"성과를 무엇에 두면 '도박'이 된다고 했나?",opts:["대박·떡상","작은 단계","꾸준함","과정"],a:0,exp:"성과를 **대박·떡상**에 두면 사업이 아니라 도박이 된다. 성과는 단계별로 쌓인다."},
+  {c:"실행·스토리",type:"ox",q:"성장보다 성과가 중요하며, 성과가 성장을 만든다.",a:true,exp:"맞다. 아주 작은 성과(체크리스트)부터 쌓아야 성장이 된다."},
+  {c:"실행·스토리",type:"mc",q:"에비앙·백세주가 비싼 이유로 든 것은?",opts:["스토리","품질","광고","희소성"],a:0,exp:"에비앙·백세주는 **스토리** 때문에 비싸게 팔린다(스토리 마케팅)."},
+  {c:"실행·스토리",type:"mc",q:"'Just do it'을 두 글자로 표현한 말은?",opts:["냥뛰","도전","열정","실천"],a:0,exp:"Just do it = '**냥뛰(그냥 뛰어)**'. 완벽한 때는 없으니 계획했으면 그냥 뛴다."},
+  {c:"인터뷰·질문",type:"mc",q:"좋은 질문의 형태는?",opts:["장답형(Why·How·What)","단답형(예/아니오)","유도형","압박형"],a:0,exp:"좋은 질문은 **장답형**으로 Why·How·What이 들어간다."},
+  {c:"인터뷰·질문",type:"ox",q:"'제가 무슨 일을 하면 좋을까요?'는 좋은 인터뷰 질문이다.",a:false,exp:"아니다. 점집 간 격의 **나쁜 질문**. 자기 패를 다 까서 관계 형성에 좋지 않다."},
+  {c:"인터뷰·질문",type:"mc",q:"인터뷰의 3단계 태도는?",opts:["질문 · 경청 · 공감","말하기 · 듣기 · 메모","소개 · 협상 · 마무리","관찰 · 분석 · 평가"],a:0,exp:"인터뷰는 **질문하고 · 경청하고 · 공감**한다."},
+  {c:"인터뷰·질문",type:"mc",q:"강의에서 제시한 '경청'의 구체적 행동은?",opts:["고개를 끄덕인다","받아 적는다","눈을 감는다","질문을 멈춘다"],a:0,exp:"경청 = **고개를 끄덕인다**(이해했으니 편히 말하라는 신호)."},
+  {c:"인터뷰·질문",type:"mc",q:"인터뷰에서 가장 먼저 지켜야 할 것은?",opts:["약속 시간(5분 전)","좋은 질문지","선물 준비","복장"],a:0,exp:"인터뷰는 **시간 지키기**가 첫째. 9시 약속이면 5분 전에 들어가라."},
+  {c:"인터뷰·질문",type:"ox",q:"인터뷰의 핵심 목적은 정보 획득보다 '관계 형성'이다.",a:true,exp:"맞다. 비즈니스에서 관계가 무엇보다 중요하다."},
+  {c:"인터뷰·질문",type:"mc",q:"멘토 인터뷰는 최소 몇 명을 권했나?",opts:["다섯 명","두 명","열 명","한 명"],a:0,exp:"멘토 인터뷰는 최소 **다섯 명**(더 해도 좋다)."},
+  {c:"학습·태도",type:"ox",q:"피드백 텀(일·주·월·3개월)이 길수록 더 성공한다.",a:true,exp:"맞다. 긴 텀까지 기억하고 피드백하는 사람이 더 성장·성공한다."},
+  {c:"학습·태도",type:"mc",q:"외부 환경 변수의 가장 큰 특징은?",opts:["통제가 안 된다","예측이 쉽다","변하지 않는다","내가 만든다"],a:0,exp:"외부 변수는 **통제 불가**. 그럴 땐 내 태도·자세 등 할 수 있는 것만 한다."},
+  {c:"학습·태도",type:"mc",q:"A에서 B로 가는 변화는 주로 어디서 해결되나?",opts:["일상","특별한 사건","자격증","학위"],a:0,exp:"대부분의 변화는 **일상의 변화**다. 일상에서 조금씩 해결된다."},
+  {c:"학습·태도",type:"mc",q:"강의에서 말한 '칭찬'이란?",opts:["상대를 행복하게 만드는 가장 기본 행동","잘한 일에 주는 보상","아부의 일종","평가의 결과"],a:0,exp:"칭찬 = **상대를 행복하게 만드는 가장 기본적인 행동**."},
+  {c:"학습·태도",type:"ox",q:"인생은 한 방(대박)을 노리는 것이 옳은 경영이다.",a:false,exp:"아니다. '인생 한 방'은 **쪽박**. **소박→중박**으로 단계적·지속적으로 간다."},
+  {c:"학습·태도",type:"mc",q:"매일의 목표(체크리스트)를 무엇이라 비유했나?",opts:["매일의 게임","숙제","의무","규칙"],a:0,exp:"체크리스트는 **매일의 게임**. 했는지/됐는지/안 됐는지만 체크한다."},
+  {c:"학습·태도",type:"ox",q:"강의만 듣고 적용하지 않아도 성과는 난다.",a:false,exp:"아니다. 강의만 듣는 건 소용없고 반드시 **삶에 적용(실행)**해야 성과가 난다."},
+  {c:"심화",type:"mc",q:"동료가 '좋은 것도 많고 성공할 것 같은데...'라고 말한다면, 무엇이 부족한가?",opts:["핵심가치","자금","인맥","운"],a:0,exp:"핵심가치가 없으면 **그때그때 달라져** 신뢰를 잃고, 팀이 산으로 간다."},
+  {c:"심화",type:"mc",q:"'좋은 일'을 넘어 '위대한 사업'이 되려면?",opts:["좋음을 넘어 '옳음'","더 큰 자본금","더 좋은 사람들","더 높은 기술"],a:0,exp:"위대함은 **'좋음'이 아니라 '옳음'**에서 나온다."},
+  {c:"심화",type:"mc",q:"전략 독서의 핵심은?",opts:["내 고객이 읽는 책을 읽기","베스트셀러 읽기","아무 책이나 많이 읽기","지정도서 읽기"],a:0,exp:"**나와 관련된, 내 고객이 읽는 책**을 읽어라."},
+  {c:"심화",type:"mc",q:"점과 선과 면의 관계에서, '점'은?",opts:["선택·결정","순간·기회","시작점","기준점"],a:0,exp:"점(선택·결정) → 선(실행) → 면(기회·성과). 점이 모여 선을 만든다."},
+  {c:"심화",type:"ox",q:"결정과 실행 없이는 기회가 찾아온다.",a:false,exp:"아니다. **결정·실행이 면(기회)을 만든다**. 기회는 주어지는 게 아니라 행동으로 만들어진다."},
+  {c:"심화",type:"mc",q:"개구리 우물 비유의 교훈은?",opts:["조금씩 올라갈수록 하늘이 넓어진다","우물 안이 가장 안전하다","빨리 뛰쳐나가야 한다","남이 끌어줄 때를 기다려야 한다"],a:0,exp:"개구리는 **조금씩 올라갈수록** 하늘이 넓어진다. 단계적으로 시야를 넓혀라."},
+  {c:"심화",type:"mc",q:"장범준(버스커 버스커)의 슈퍼스타K에서 가장 빛난 특징은?",opts:["떨어져도 붙어도 늘 즐겼다","가장 좋은 노래 실력","뛰어난 외모","심사위원들과의 관계"],a:0,exp:"패자부활을 거듭하면서도 **늘 즐겼다**. 즐기는 사람을 이길 수 없다."},
+  {c:"심화",type:"mc",q:"한 분야의 깊이 있는 학습을 위해 권한 책의 권수는?",opts:["한 분야에 15권","모든 분야에 5권씩","한 분야에 3권","제약 없이 무제한"],a:0,exp:"한 분야를 깊이 있게 알려면 **15권의 책** 선정·독서를 권했다."},
+  {c:"심화",type:"ox",q:"스토리의 5가지 요소는: 자기인정, 현실인식, 내적동기, 문제해결, 설득력이다.",a:true,exp:"맞다. 스토리 5요소 = 자기인정·현실인식·내적동기·문제해결·설득력."},
+  {c:"심화",type:"mc",q:"실행하려던 계획이 있는데 완벽하게 준비될 때까지 기다려야 할까?",opts:["계획했으면 그 시점에 그냥 뛴다","최소 6개월은 더 준비한다","완벽해질 때까지 기다린다","다른 사람의 조언을 먼저 구한다"],a:0,exp:"**완벽한 때는 없다**. 계획했으면 '냥뛰(그냥 뛰어)'."},
+  {c:"심화",type:"mc",q:"매일 밤 목표 기록에서 꼭 쓰게 한 것은?",opts:["오늘 감사한 일 3가지","오늘 번 돈","내일 날씨","경쟁사 분석"],a:0,exp:"매일 **감사한 일 3가지**를 쓰게 한다. 그것이 성과·성장을 만든다."},
+  {c:"심화",type:"mc",q:"비전·경영·전략·실행 시스템을 한 문장으로 표현하면?",opts:["5년 꿈을 매일의 실행으로 만드는 것","돈을 최대한 버는 것","큰 조직을 만드는 것","남과 다르게 행동하기"],a:0,exp:"비전(5년)을 경영(구체적 업무)로, 전략(선택)으로, 실행(매일)으로 만드는 시스템."},
+  {c:"심화",type:"ox",q:"강의를 듣고 피드백을 작성해 댓글로 나누는 것이 강의의 효과를 배로 높인다.",a:true,exp:"맞다. **피드백 작성 → 행동 실행 → 댓글 나눔**이 성장 사이클을 만든다."},
+  {c:"심화",type:"mc",q:"'형식지'를 일상에서 '암묘지'로 바꾸는 방법은?",opts:["반복과 실행","이론 공부","책 읽기","남 따라하기"],a:0,exp:"매뉴얼(형식지)을 **반복해서 실행**하면 경험(암묘지=안목)이 된다."},
+  {c:"심화",type:"mc",q:"내가 하는 일이 '상품'이 되려면?",opts:["내 가치를 담아 상대의 최고 이익을 만들기","가장 싼 가격에 팔기","가장 많은 사람에게 팔기","가장 빠르게 만들기"],a:0,exp:"상품 = **자신의 가치를 담은 도구**. 상대의 이익이 클수록 상품의 가치가 높다."},
+  {c:"심화",type:"mc",q:"경영스쿨 강의의 최종 메시지는?",opts:["냥뛰!","대박을 노려라","완벽해질 때까지 준비하기","혼자 해내기"],a:0,exp:"**'냥뛰!'** — 완벽한 때는 없으니, 계획했으면 그냥 뛰어. 단계·단기·단순의 반복이 축적이 된다."}
+];
+
+const CORE = ["vision","management","strategy","execution"];
+let quiz = [], idx = 0, answers = [];
+let lastScore = 0, lastQuiz = [];
+
+function shuffle(arr) {
+  for(let i=arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function buildQuiz() {
+  const chosen = [];
+  CORE.forEach(con => {
+    const pool = QUESTIONS.filter(q=>q.concept===con);
+    chosen.push(pool[Math.floor(Math.random()*pool.length)]);
+  });
+  const rest = shuffle(QUESTIONS.filter(q => !chosen.includes(q) && !q.concept));
+  chosen.push(...rest.slice(0,6));
+  shuffle(chosen);
+  return chosen.map(q => {
+    if(q.type==="mc") {
+      const order = shuffle(q.opts.map((t,i)=>({t,correct:i===q.a})));
+      return {...q, _opts:order};
+    }
+    return {...q};
+  });
+}
+
+function startRandomQuiz() { quiz = buildQuiz(); startQuizGame(); }
+function startCoreQuiz() {
+  const core = CORE.map(con => {
+    const pool = QUESTIONS.filter(q=>q.concept===con);
+    return pool[Math.floor(Math.random()*pool.length)];
+  });
+  quiz = core;
+  startQuizGame();
+}
+
+function startQuizGame() {
+  idx = 0; answers = new Array(quiz.length).fill(null);
+  show("quiz");
+  document.getElementById("quiz-mascot").classList.remove("happy","sad");
+  render();
+}
+
+function show(id) {
+  ["home","quiz","result"].forEach(s => document.getElementById(s).style.display = s===id?"flex":"none");
+  if(id==="result") document.getElementById("result").style.display = "block";
+  window.scrollTo(0,0);
+}
+
+function render() {
+  const q = quiz[idx];
+  document.getElementById("qcount").textContent = `문제 ${idx+1} / ${quiz.length}`;
+  document.getElementById("qcat").textContent = q.c;
+  document.getElementById("progress").style.width = `${idx/quiz.length*100}%`;
+  document.getElementById("qtype").textContent = q.type==="ox" ? "◯ / ✕ 문제" : "객관식";
+  document.getElementById("qq").textContent = q.q;
+
+  const opts = document.getElementById("options");
+  opts.innerHTML = "";
+  if(q.type==="ox") {
+    opts.className = "ox-options";
+    [["◯",true],["✕",false]].forEach(([label,val]) => {
+      const b = document.createElement("button");
+      b.className = "ox-btn" + (answers[idx]===val?" selected":"");
+      b.textContent = label;
+      b.onclick = () => { answers[idx]=val; render(); };
+      opts.appendChild(b);
+    });
+  } else {
+    opts.className = "quiz-options";
+    q._opts.forEach((o,i) => {
+      const b = document.createElement("button");
+      b.className = "option-btn" + (answers[idx]===i?" selected":"");
+      b.innerHTML = `<span class="option-mark">${String.fromCharCode(9312+i)}</span><span>${o.t}</span>`;
+      b.onclick = () => { answers[idx]=i; render(); };
+      opts.appendChild(b);
+    });
+  }
+  document.getElementById("nextBtn").disabled = answers[idx]===null;
+  document.getElementById("nextBtn").textContent = idx===quiz.length-1 ? "결과 보기 🏁" : "다음 →";
+}
+
+function nextQuestion() {
+  if(answers[idx]===null) return;
+  if(idx < quiz.length-1) { idx++; render(); }
+  else finish();
+}
+
+function isCorrect(q, ans) {
+  if(q.type==="ox") return ans===q.a;
+  return q._opts[ans] && q._opts[ans].correct;
+}
+
+function finish() {
+  let score = 0;
+  quiz.forEach((q,i) => { if(isCorrect(q,answers[i])) score++; });
+  lastScore = score;
+  lastQuiz = [...quiz];
+
+  show("result");
+  document.getElementById("score").textContent = `${score} / ${quiz.length}`;
+  document.getElementById("percent").textContent = `100점 만점 환산 ${Math.round(score/quiz.length*100)}점`;
+
+  const grades = [
+    [10,"🏆 완벽한 1인 CEO! 냥뛰!"],
+    [8,"🔥 훌륭합니다! 전략이 몸에 뱄네요."],
+    [6,"👍 좋아요. 한 단계만 더 축적!"],
+    [4,"📈 시작이 반! 복습하면 쑥쑥 오릅니다."],
+    [0,"🌱 냥뛰! 강의 다시 보고 재도전해요."]
+  ];
+  document.getElementById("grade").textContent = grades.find(g=>score>=g[0])[1];
+
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  quiz.forEach((q,i) => {
+    const ok = isCorrect(q,answers[i]);
+    let yours, correct;
+    if(q.type==="ox") {
+      yours = answers[i]===true?"◯":"✕";
+      correct = q.a?"◯":"✕";
+    } else {
+      yours = q._opts[answers[i]].t;
+      correct = q._opts.find(o=>o.correct).t;
+    }
+    const el = document.createElement("div");
+    el.className = "review-item " + (ok?"correct":"wrong");
+    el.innerHTML = `
+      <div class="review-q">${i+1}. ${q.q}</div>
+      <div class="review-status ${ok?"correct":"wrong"}">${ok?"✓ 정답":"✗ 오답"}</div>
+      ${!ok?`<div style="font-size:12px; color:var(--text-muted);">내 선택: ${yours} | 정답: <b>${correct}</b></div>`:""}
+      <div class="review-exp">💡 ${q.exp}</div>`;
+    list.appendChild(el);
+  });
+}
+
+function goHome() { show("home"); }
+
+function showReview() {
+  if(lastQuiz.length === 0) { alert("아직 게임을 플레이하지 않았어요!"); return; }
+  show("result");
+  window.scrollTo(0,0);
+}
+
+function showScore() {
+  alert(`최고 점수: ${lastScore} / ${lastQuiz.length || 10}\n(${Math.round((lastScore/(lastQuiz.length||10))*100)}점)`);
+}
+</script>
+</body>
+</html>
